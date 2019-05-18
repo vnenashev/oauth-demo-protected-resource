@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: oauth-demo-protected-resource
+  name: oauth-demo-protected-resource
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: oauth-demo-protected-resource
+  template:
+    metadata:
+      labels:
+        app: oauth-demo-protected-resource
+    spec:
+      containers:
+        - name: oauth-demo-protected-resource
+          image: vnenashev/oauth-demo-protected-resource:0.0.1
+          ports:
+            - containerPort: 8081
+              protocol: TCP
