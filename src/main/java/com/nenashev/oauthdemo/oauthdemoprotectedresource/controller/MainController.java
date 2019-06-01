@@ -1,14 +1,13 @@
 package com.nenashev.oauthdemo.oauthdemoprotectedresource.controller;
 
 import com.nenashev.oauthdemo.oauthdemoprotectedresource.model.AccessTokenInfo;
+import com.nenashev.oauthdemo.oauthdemoprotectedresource.util.ScopeUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,7 @@ public class MainController {
     @GetMapping(path = "/words", produces = "application/json")
     public ResponseEntity<?> getWords(final @RequestAttribute("access_token") AccessTokenInfo accessTokenInfo) {
         logger.info("Received GET /words");
-        final boolean hasReadAccess = hasAccess(accessTokenInfo.getScope(), "read");
+        final boolean hasReadAccess = ScopeUtils.hasAccess(accessTokenInfo.getScope(), "read");
         if (!hasReadAccess) {
             logger.warn("Access token has no 'read' access");
             return ResponseEntity
@@ -63,7 +62,7 @@ public class MainController {
     public ResponseEntity<?> addWord(final @RequestAttribute("access_token") AccessTokenInfo accessTokenInfo,
                                      final @RequestParam("word") Optional<String> word) {
         logger.info("Received POST /words");
-        final boolean hasWriteAccess = hasAccess(accessTokenInfo.getScope(), "write");
+        final boolean hasWriteAccess = ScopeUtils.hasAccess(accessTokenInfo.getScope(), "write");
         if (!hasWriteAccess) {
             logger.warn("Access token has no 'write' access");
             return ResponseEntity
@@ -84,7 +83,7 @@ public class MainController {
     @DeleteMapping(path = "/words")
     public ResponseEntity<?> deleteWord(final @RequestAttribute("access_token") AccessTokenInfo accessTokenInfo) {
         logger.info("Received DELETE /words");
-        final boolean hasDeleteAccess = hasAccess(accessTokenInfo.getScope(), "delete");
+        final boolean hasDeleteAccess = ScopeUtils.hasAccess(accessTokenInfo.getScope(), "delete");
         if (!hasDeleteAccess) {
             logger.warn("Access token has no 'delete' access");
             return ResponseEntity
@@ -99,16 +98,6 @@ public class MainController {
         logger.info("Deleted word {}", w);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    private boolean hasAccess(final String scope, final String access) {
-        return Optional.ofNullable(scope)
-            .filter(StringUtils::hasText)
-            .map(s -> s.split(" "))
-            .map(Stream::of)
-            .filter(Predicate.isEqual(access))
-            .flatMap(Stream::findAny)
-            .orElse(null) != null;
     }
 
 }
