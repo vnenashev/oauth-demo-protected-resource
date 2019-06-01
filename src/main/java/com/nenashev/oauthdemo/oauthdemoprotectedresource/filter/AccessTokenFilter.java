@@ -5,6 +5,7 @@ import com.nenashev.oauthdemo.oauthdemoprotectedresource.model.AccessTokenInfo;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.servlet.FilterChain;
@@ -35,6 +36,10 @@ public class AccessTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(final HttpServletRequest request,
                                     final HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
+        if (Objects.equals("/", request.getServletPath())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         logger.info("Request is {}, getting access token", request.getServletPath());
 
         final Optional<String> authHeader = Optional.ofNullable(request.getHeader("Authorization"))
@@ -69,7 +74,7 @@ public class AccessTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        request.setAttribute("access_token", foundAccessToken);
+        request.setAttribute("access_token", foundAccessToken.get());
 
         filterChain.doFilter(request, response);
     }
