@@ -3,6 +3,7 @@ package com.nenashev.oauthdemo.oauthdemoprotectedresource.controller;
 import com.nenashev.oauthdemo.oauthdemoprotectedresource.db.AccessTokenRepository;
 import com.nenashev.oauthdemo.oauthdemoprotectedresource.model.AccessTokenInfo;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,7 +48,7 @@ public class MainController {
 
         if (auth.isPresent() && auth.get().toLowerCase().startsWith("bearer")) {
             inToken = auth.get().substring("bearer ".length());
-        } else if (accessToken.isPresent()) {
+        } else if (accessToken.isPresent() && StringUtils.hasText(accessToken.get())) {
             inToken = accessToken.get();
         } else {
             logger.error("No access token in Authorization header or request parameter");
@@ -57,8 +59,13 @@ public class MainController {
 
         if (foundAccessToken.isPresent()) {
             logger.info("Found matching access token: {}", foundAccessToken);
+            final Instant now = Instant.now();
+            if (foundAccessToken.get().getExpireDate().isBefore(now)) {
+                logger.error("Access token is expired");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
         } else {
-            logger.error("No matching toke was found");
+            logger.error("No matching token was found");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
