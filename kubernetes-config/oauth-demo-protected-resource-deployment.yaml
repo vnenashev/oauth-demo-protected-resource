@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: oauth-demo-protected-resource
-          image: vnenashev/oauth-demo-protected-resource:0.1.0
+          image: vnenashev/oauth-demo-protected-resource:0.2.0
           ports:
             - containerPort: 8081
               protocol: TCP
